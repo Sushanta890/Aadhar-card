@@ -1,55 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Manager Login</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#eef3f9; margin:0; padding:20px; }
-    .card { max-width:400px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-    label { display:block; margin-top:10px; font-weight:bold; }
-    input, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
-    button { background:#28a745; color:#fff; border:none; cursor:pointer; margin-top:15px; }
-    button:hover { background:#218838; }
-    .profile { margin-top:20px; padding:15px; border-radius:8px; background:#f0f5ff; }
-  </style>
+<meta charset="UTF-8">
+<title>Manager Login</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#eef3f9; margin:0; padding:20px; }
+  .card { max-width:400px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+  label { display:block; margin-top:10px; font-weight:bold; }
+  input, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+  button { background:#28a745; color:#fff; border:none; cursor:pointer; margin-top:15px; }
+  button:hover { background:#218838; }
+</style>
 </head>
 <body>
-  <div class="card">
-    <h2>Manager Login</h2>
-    <label>Account Number</label>
-    <input id="mgr_acc" placeholder="Enter Manager Account No">
+<div class="card">
+  <h2>Manager Login</h2>
+  <label>Account Number</label>
+  <input id="mgr_acc" placeholder="Enter Manager Account No">
 
-    <label>Password</label>
-    <input id="mgr_pw" type="password">
+  <label>Password</label>
+  <input id="mgr_pw" type="password">
 
-    <button onclick="loginManager()">Login</button>
-
-    <div id="profile" class="profile" style="display:none;">
-      <h3>Manager Profile</h3>
-      <p><b>Name:</b> <span id="p_name"></span></p>
-      <p><b>Account:</b> <span id="p_acc"></span></p>
-      <p><b>Password:</b> <span id="p_pw"></span></p>
-      <p><b>Balance:</b> ₹<span id="p_bal"></span></p>
-    </div>
-  </div>
+  <button onclick="loginManager()">Login</button>
+</div>
 
 <script>
-function load(key){return JSON.parse(localStorage.getItem(key)||'[]')}
+function load(key){ return JSON.parse(localStorage.getItem(key)||'[]'); }
 
 function loginManager(){
-  const acc=document.getElementById('mgr_acc').value.trim();
-  const pw=document.getElementById('mgr_pw').value;
+  const acc = document.getElementById('mgr_acc').value.trim();
+  const pw = document.getElementById('mgr_pw').value;
 
-  const managers=load("managers");
-  const m=managers.find(x=>x.account===acc && x.password===pw);
+  const managers = load("managers");
+  const m = managers.find(x => x.account === acc && x.password === pw);
 
-  if(!m){ alert("Invalid login!"); return; }
+  if(!m){ 
+    alert("Invalid login!"); 
+    return; 
+  }
 
-  document.getElementById("profile").style.display="block";
-  document.getElementById("p_name").textContent=m.name;
-  document.getElementById("p_acc").textContent=m.account;
-  document.getElementById("p_pw").textContent=m.password;
-  document.getElementById("p_bal").textContent=m.balance;
+  // Save the logged-in manager info in localStorage for Home.html
+  localStorage.setItem("loggedInManager", JSON.stringify(m));
+
+  // Redirect to Home.html
+  window.location.href = "Home.html";
 }
 </script>
 </body>
