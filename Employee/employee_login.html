@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Employee Login</title>
+<style>
+body { font-family: Arial,sans-serif; background:#eef6f9; margin:0; padding:20px; }
+.card { max-width:420px;margin:100px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+label { display:block; margin-top:10px; font-weight:bold; }
+input, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+button { background:#17a2b8; color:#fff; border:none; cursor:pointer; margin-top:15px; }
+button:hover { background:#117a8b; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Employee Login</h2>
+
+  <label>Employee ID</label>
+  <input id="emp_id" placeholder="Enter Employee ID">
+
+  <label>Password</label>
+  <input id="emp_pw" type="password">
+
+  <button onclick="loginEmployee()">Login</button>
+</div>
+
+<script>
+function load(key){ return JSON.parse(localStorage.getItem(key)||'[]'); }
+
+function loginEmployee(){
+  const id=document.getElementById("emp_id").value.trim();
+  const pw=document.getElementById("emp_pw").value;
+  const employees=load("employees");
+  const emp = employees.find(x=>x.id===id && x.password===pw);
+
+  if(!emp){ alert("Invalid login!"); return; }
+
+  // Save current employee
+  localStorage.setItem("currentEmployee", JSON.stringify(emp));
+
+  // Redirect to home page
+  window.location.href="employee_home.html";
+}
+</script>
+</body>
+</html>
