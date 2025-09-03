@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Employee Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#eef6f9; margin:0; padding:20px; }
+    .card { max-width:420px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    label { display:block; margin-top:10px; font-weight:bold; }
+    input, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+    button { background:#17a2b8; color:#fff; border:none; cursor:pointer; margin-top:15px; }
+    button:hover { background:#117a8b; }
+    .profile { margin-top:20px; padding:15px; border-radius:8px; background:#f4faff; }
+    img { max-width:100px; border-radius:6px; margin-bottom:10px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Employee Login</h2>
+    <label>Employee ID</label>
+    <input id="emp_id" placeholder="Enter Employee ID">
+
+    <label>Password</label>
+    <input id="emp_pw" type="password">
+
+    <button onclick="loginEmployee()">Login</button>
+
+    <div id="profile" class="profile" style="display:none;">
+      <h3>Employee Profile</h3>
+      <img id="p_img">
+      <p><b>Name:</b> <span id="p_name"></span></p>
+      <p><b>ID:</b> <span id="p_id"></span></p>
+      <p><b>Password:</b> <span id="p_pw"></span></p>
+      <p><b>Balance:</b> ₹<span id="p_bal"></span></p>
+    </div>
+  </div>
+
+<script>
+function load(key){return JSON.parse(localStorage.getItem(key)||'[]')}
+
+function loginEmployee(){
+  const id=document.getElementById("emp_id").value.trim();
+  const pw=document.getElementById("emp_pw").value;
+
+  const employees=load("employees");
+  const e=employees.find(x=>x.id===id && x.password===pw);
+
+  if(!e){ alert("Invalid login!"); return; }
+
+  document.getElementById("profile").style.display="block";
+  document.getElementById("p_img").src=e.img;
+  document.getElementById("p_name").textContent=e.fname+" "+e.lname;
+  document.getElementById("p_id").textContent=e.id;
+  document.getElementById("p_pw").textContent=e.password;
+  document.getElementById("p_bal").textContent=e.balance;
+}
+</script>
+</body>
+</html>

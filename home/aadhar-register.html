@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Aadhar Registration</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f9f9f9; margin:0; padding:20px; }
+    .card { max-width:550px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    label { display:block; margin-top:10px; font-weight:bold; }
+    input, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+    button { background:#28a745; color:#fff; border:none; cursor:pointer; margin-top:15px; }
+    button:hover { background:#218838; }
+    .result { margin-top:20px; padding:15px; border-radius:8px; background:#f0f9f0; }
+    img { max-width:100px; border-radius:6px; margin-bottom:10px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Aadhar Registration</h2>
+    <label>First Name</label>
+    <input id="fname">
+
+    <label>Last Name</label>
+    <input id="lname">
+
+    <label>Photo</label>
+    <input id="photo" type="file" accept="image/*">
+
+    <label>Mobile</label>
+    <input id="mobile">
+
+    <label>Email</label>
+    <input id="email">
+
+    <label>Country</label>
+    <input id="country">
+
+    <label>State</label>
+    <input id="state">
+
+    <label>City</label>
+    <input id="city">
+
+    <label>Block</label>
+    <input id="block">
+
+    <label>Village</label>
+    <input id="village">
+
+    <button onclick="registerAadhar()">Register Aadhar</button>
+
+    <div id="result" class="result" style="display:none;"></div>
+  </div>
+
+<script>
+function load(key){return JSON.parse(localStorage.getItem(key)||'[]')}
+function save(key,data){localStorage.setItem(key,JSON.stringify(data))}
+
+function genId(prefix){ return prefix + Math.floor(1000+Math.random()*9000); }
+
+function registerAadhar(){
+  const file=document.getElementById("photo").files[0];
+  if(!file){ alert("Please upload a photo!"); return; }
+
+  const reader=new FileReader();
+  reader.onload=function(){
+    const skid=genId("SK");
+    const aadhar=genId("AAD");
+    const data={
+      skid,aadhar,
+      fname:fname.value, lname:lname.value,
+      mobile:mobile.value, email:email.value,
+      country:country.value, state:state.value, city:city.value,
+      block:block.value, village:village.value,
+      img:reader.result
+    };
+
+    const list=load("aadhar");
+    list.push(data);
+    save("aadhar",list);
+
+    // charge ₹250 to first manager found
+    const mgrs=load("managers");
+    if(mgrs.length>0){ mgrs[0].balance+=250; save("managers",mgrs); }
+
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML=`
+      <h3>Registered Successfully ✅</h3>
+      <img src="${data.img}">
+      <p><b>Name:</b> ${data.fname} ${data.lname}</p>
+      <p><b>Aadhar:</b> ${data.aadhar}</p>
+      <p><b>SK ID:</b> ${data.skid}</p>
+      <p><b>Mobile:</b> ${data.mobile}</p>
+      <p><b>Email:</b> ${data.email}</p>
+      <p><b>Village:</b> ${data.village}, Block: ${data.block}, City: ${data.city}, State: ${data.state}, Country: ${data.country}</p>
+    `;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+</body>
+</html>

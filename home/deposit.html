@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Deposit to Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#fafafa; margin:0; padding:20px; }
+    .card { max-width:450px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    label { display:block; margin-top:10px; font-weight:bold; }
+    input, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+    button { background:#17a2b8; color:#fff; border:none; cursor:pointer; margin-top:15px; }
+    button:hover { background:#138496; }
+    .result { margin-top:20px; padding:15px; border-radius:8px; background:#e6f9ff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Deposit to Manager</h2>
+    <label>Manager Account Number</label>
+    <input id="acc" placeholder="e.g. MGR1234">
+
+    <label>Amount (₹)</label>
+    <input id="amt" type="number">
+
+    <button onclick="deposit()">Deposit</button>
+
+    <div id="result" class="result" style="display:none;"></div>
+  </div>
+
+<script>
+function load(key){return JSON.parse(localStorage.getItem(key)||'[]')}
+function save(key,data){localStorage.setItem(key,JSON.stringify(data))}
+
+function deposit(){
+  const acc=document.getElementById("acc").value.trim();
+  const amt=+document.getElementById("amt").value;
+
+  if(!acc || amt<=0){ alert("Enter valid details"); return; }
+
+  let mgrs=load("managers");
+  const mgr=mgrs.find(m=>m.acc===acc);
+  if(!mgr){ alert("Manager not found!"); return; }
+
+  mgr.balance+=amt;
+  save("managers",mgrs);
+
+  const res=document.getElementById("result");
+  res.style.display="block";
+  res.innerHTML=`
+    <h3>Deposit Successful ✅</h3>
+    <p><b>Manager:</b> ${mgr.name}</p>
+    <p><b>Account No:</b> ${mgr.acc}</p>
+    <p><b>Deposited:</b> ₹${amt}</p>
+    <p><b>New Balance:</b> ₹${mgr.balance}</p>
+  `;
+}
+</script>
+</body>
+</html>

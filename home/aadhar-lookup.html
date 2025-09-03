@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Aadhar Lookup</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f3f6fa; margin:0; padding:20px; }
+    .card { max-width:500px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    label { display:block; margin-top:10px; font-weight:bold; }
+    input, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+    button { background:#007bff; color:#fff; border:none; cursor:pointer; margin-top:15px; }
+    button:hover { background:#0056b3; }
+    .result { margin-top:20px; padding:15px; border-radius:8px; background:#eef6ff; }
+    img { max-width:100px; border-radius:6px; margin-bottom:10px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Aadhar Lookup</h2>
+    <label>Enter SK ID</label>
+    <input id="skid_search" placeholder="e.g. SK1234">
+    <button onclick="searchAadhar()">Search</button>
+
+    <div id="result" class="result" style="display:none;"></div>
+  </div>
+
+<script>
+function load(key){return JSON.parse(localStorage.getItem(key)||'[]')}
+
+function searchAadhar(){
+  const id=document.getElementById("skid_search").value.trim();
+  const list=load("aadhar");
+  const found=list.find(a=>a.skid===id);
+
+  const res=document.getElementById("result");
+  if(!found){
+    res.style.display="block";
+    res.innerHTML="<b>No Aadhar record found for SK ID: "+id+"</b>";
+    return;
+  }
+
+  res.style.display="block";
+  res.innerHTML=`
+    <h3>Aadhar Details</h3>
+    <img src="${found.img}">
+    <p><b>Name:</b> ${found.fname} ${found.lname}</p>
+    <p><b>Aadhar No:</b> ${found.aadhar}</p>
+    <p><b>SK ID:</b> ${found.skid}</p>
+    <p><b>Mobile:</b> ${found.mobile}</p>
+    <p><b>Email:</b> ${found.email}</p>
+    <p><b>Village:</b> ${found.village}, Block: ${found.block}, City: ${found.city}, State: ${found.state}, Country: ${found.country}</p>
+  `;
+}
+</script>
+</body>
+</html>
