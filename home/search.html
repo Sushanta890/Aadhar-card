@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Deposit to Manager Account</title>
+<title>Manager Lookup (By Mobile)</title>
 <style>
   body { font-family: Arial, sans-serif; background:#f4f7fb; margin:0; padding:20px; }
   .card { max-width:500px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
@@ -11,13 +11,16 @@
   input:focus { border-color:#0b74da; box-shadow:0 0 8px rgba(11,116,218,0.2); outline:none; }
   button { background:#0b74da; color:#fff; border:none; cursor:pointer; margin-top:15px; font-weight:bold; }
   button:hover { background:#095ab5; transform:scale(1.02); }
-  
+
   .result { margin-top:20px; padding:15px; border-radius:8px; background:#e0f7ff; opacity:0; transform:translateY(20px); transition:all 0.5s ease; }
   .result.show { opacity:1; transform:translateY(0); }
   .result p { margin:5px 0; opacity:0; transform:translateX(-20px); animation: fadeIn 0.5s forwards; }
   .result p:nth-child(1) { animation-delay:0.1s; }
   .result p:nth-child(2) { animation-delay:0.2s; }
   .result p:nth-child(3) { animation-delay:0.3s; }
+  .result p:nth-child(4) { animation-delay:0.4s; }
+  .result p:nth-child(5) { animation-delay:0.5s; }
+  .result p:nth-child(6) { animation-delay:0.6s; }
 
   @keyframes fadeIn {
     to { opacity:1; transform:translateX(0); }
@@ -27,51 +30,40 @@
 <body>
 
 <div class="card">
-  <h2>Deposit to Manager Account</h2>
-  <label>Manager Account Number</label>
-  <input id="mgr_acc" placeholder="Enter account number">
-
-  <label>Deposit Amount (₹)</label>
-  <input id="deposit_amt" type="number" placeholder="Enter amount">
-
-  <button onclick="depositToManager()">Deposit</button>
+  <h2>Manager Lookup (By Mobile)</h2>
+  <label>Enter Mobile Number</label>
+  <input id="mobile" placeholder="e.g. 9876543210">
+  <button onclick="lookupManager()">Search</button>
 
   <div id="result" class="result"></div>
 </div>
 
 <script>
 function load(key){ return JSON.parse(localStorage.getItem(key) || '[]'); }
-function save(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
 
-function depositToManager() {
-  const acc = document.getElementById('mgr_acc').value.trim();
-  const amt = parseFloat(document.getElementById('deposit_amt').value);
-
-  if(!acc || isNaN(amt) || amt <= 0) return alert("Please enter valid account number and amount!");
+function lookupManager() {
+  const mobile = document.getElementById('mobile').value.trim();
+  if(!mobile) return alert("Please enter a mobile number!");
 
   const managers = load("managers");
-  const mgr = managers.find(m => m.account === acc);
+  const mgr = managers.find(m => m.mobile === mobile);
 
   const res = document.getElementById('result');
+  res.classList.add('show');
+
   if(!mgr){
-    res.classList.add('show');
-    res.innerHTML = `<p><b>Error:</b> Manager account not found.</p>`;
+    res.innerHTML = `<p><b>No manager found with this mobile number.</b></p>`;
     return;
   }
 
-  mgr.balance = (parseFloat(mgr.balance) || 0) + amt;
-  save("managers", managers);
-
-  res.classList.add('show');
   res.innerHTML = `
-    <p><b>Deposit Successful!</b></p>
-    <p>Manager: ${mgr.name}</p>
-    <p>New Balance: ₹${mgr.balance.toFixed(2)}</p>
+    <p><b>Full Name:</b> ${mgr.name}</p>
+    <p><b>Account Number:</b> ${mgr.account}</p>
+    <p><b>Password:</b> ${mgr.password}</p>
+    <p><b>Email:</b> ${mgr.email}</p>
+    <p><b>Mobile Number:</b> ${mgr.mobile}</p>
+    <p><b>Balance:</b> ₹${parseFloat(mgr.balance).toFixed(2)}</p>
   `;
-
-  // Optional: clear inputs
-  document.getElementById('mgr_acc').value = '';
-  document.getElementById('deposit_amt').value = '';
 }
 </script>
 
