@@ -1,49 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Employee Registration</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f7f9fc; margin:0; padding:20px; }
-    .card { max-width:500px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-    label { display:block; margin-top:10px; font-weight:bold; }
-    input, button, select { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
-    button { background:#007bff; color:#fff; border:none; cursor:pointer; margin-top:15px; }
-    button:hover { background:#0056b3; }
-    .note { font-size:12px; color:#555; margin-top:10px; }
-    img { display:block; margin-top:10px; max-width:120px; border-radius:6px; }
-  </style>
+<meta charset="UTF-8">
+<title>Employee Registration</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f7f9fc; margin:0; padding:20px; }
+  .card { max-width:500px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+  label { display:block; margin-top:10px; font-weight:bold; }
+  input, button, select { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; font-size:15px; }
+  button { background:#007bff; color:#fff; border:none; cursor:pointer; margin-top:15px; font-weight:bold; }
+  button:hover { background:#0056b3; }
+  .note { font-size:12px; color:#555; margin-top:10px; }
+  img { display:block; margin-top:10px; max-width:120px; border-radius:6px; }
+</style>
 </head>
 <body>
-  <div class="card">
-    <h2>Employee Registration</h2>
-    <label>First Name</label>
-    <input id="emp_fname" placeholder="Enter first name">
+<div class="card">
+  <h2>Employee Registration</h2>
 
-    <label>Last Name</label>
-    <input id="emp_lname" placeholder="Enter last name">
+  <label>First Name</label>
+  <input id="emp_fname" placeholder="Enter first name">
 
-    <label>Upload Passport Photo</label>
-    <input id="emp_img" type="file" accept="image/*" onchange="previewImg(event)">
-    <img id="imgPreview" style="display:none;">
+  <label>Last Name</label>
+  <input id="emp_lname" placeholder="Enter last name">
 
-    <label>Password</label>
-    <input id="emp_pw" type="password">
+  <label>Mobile Number</label>
+  <input id="emp_mobile" placeholder="10-digit mobile number" type="tel">
 
-    <label>Confirm Password</label>
-    <input id="emp_pw2" type="password">
+  <label>Email ID</label>
+  <input id="emp_email" placeholder="example@mail.com" type="email">
 
-    <button onclick="createEmployee()">Register Employee</button>
-    <button onclick="autoGenPass()">Auto-generate Password</button>
+  <label>Upload Passport Photo</label>
+  <input id="emp_img" type="file" accept="image/*" onchange="previewImg(event)">
+  <img id="imgPreview" style="display:none;">
 
-    <p class="note">Employee ID will be auto-generated and stored in localStorage.</p>
-  </div>
+  <label>Password</label>
+  <input id="emp_pw" type="password">
+
+  <label>Confirm Password</label>
+  <input id="emp_pw2" type="password">
+
+  <button onclick="createEmployee()">Register Employee</button>
+  <button onclick="autoGenPass()">Auto-generate Password</button>
+
+  <p class="note">Employee ID & SK ID will be auto-generated and stored in localStorage.</p>
+</div>
 
 <script>
-function load(key){return JSON.parse(localStorage.getItem(key)||'[]')}
-function save(key,val){localStorage.setItem(key,JSON.stringify(val))}
-function genEmpId(){return "EMP"+Date.now().toString().slice(-6)}
-function rndPass(){return Math.random().toString(36).slice(-8)}
+function load(key){ return JSON.parse(localStorage.getItem(key)||'[]'); }
+function save(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+
+// Generate unique Employee ID
+function genEmpId(){ return "EMP"+Date.now().toString().slice(-6); }
+// Generate SK ID
+function genSKId(){ return "SKID"+Math.floor(1000 + Math.random()*8999); }
+// Generate random password
+function rndPass(){ return Math.random().toString(36).slice(-8); }
 
 function autoGenPass(){
   const pw=rndPass();
@@ -66,21 +78,26 @@ function previewImg(event){
 function createEmployee(){
   const fname=document.getElementById("emp_fname").value.trim();
   const lname=document.getElementById("emp_lname").value.trim();
+  const mobile=document.getElementById("emp_mobile").value.trim();
+  const email=document.getElementById("emp_email").value.trim();
   const pw=document.getElementById("emp_pw").value;
   const pw2=document.getElementById("emp_pw2").value;
   const img=document.getElementById("imgPreview").src;
 
-  if(!fname||!lname) return alert("Name required!");
+  if(!fname||!lname) return alert("First and Last name required!");
+  if(!mobile.match(/^\d{10}$/)) return alert("Enter valid 10-digit mobile number!");
+  if(!email) return alert("Email is required!");
   if(pw!==pw2) return alert("Passwords do not match!");
   if(!img) return alert("Please upload photo!");
 
   const employees=load("employees");
-  const id=genEmpId();
+  const empId=genEmpId();
+  const skId=genSKId();
 
-  employees.push({fname,lname,password:pw,id,balance:0,img});
+  employees.push({fname,lname,mobile,email,password:pw,id:empId,skid:skId,balance:0,img});
   save("employees",employees);
 
-  alert(`Employee Registered!\nName: ${fname} ${lname}\nID: ${id}`);
+  alert(`Employee Registered!\nName: ${fname} ${lname}\nEmployee ID: ${empId}\nSK ID: ${skId}`);
 }
 </script>
 </body>

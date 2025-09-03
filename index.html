@@ -1,155 +1,186 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Play It Yourself</title>
-  <style type="text/css">
-  .main{
-    width="1000px"
-    height: 200px;
-    background-color:#173459;
+<meta charset="UTF-8">
+<title>Play It Yourself</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #4a90e2, #50e3c2);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
-    .dd {
-      position: relative;
-      display: inline-block;
-    }
-    .dd-btn {
-      padding: 15px;
-      text-align: center;
-      background: #173459;
-      border: none;
-      width: 200px;
-      color: #f8f9f9;
-    }
-    .dd-content {
-      position: absolute;
-      width: 100%;
-      box-shadow: 0 18px 36px rgba(0,0,0,0.30), 0 14px 11px rgba(0,0,0,0.22);
-      height: 0px;
-      transition: height 1s;
-      overflow: hidden;
-    }
-    .dd:hover > .dd-content {
-      height: 150px;
-    }
-    .dd-content > a {
-      display: block;
-      padding: 15px;
-      text-decoration: none;
-      color: black;
-    }
-    
-    * {
-      box-sizing: border-box;
-    }
-    html, body {
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      display: flex;
-      min-height: 100vh;
-      flex-direction: column;
-    }
-    main {
-      flex: 1 0 auto;
-    }
-    footer {
-      color: #fff;
-      background: #333;
-      position: relative; /* required to position the copyright at the bottom */
-      font-size: 80%;
-    }
-    .footer-copyright {
-      width: 100%;
-      height: 40px;
-      background: #111;
-      /* positions the copyright at the bottom of the footer */
-      padding: 10px;
-      position: absolute;
-      bottom: 0px;
-      left: 0px;
-    }
-    .footer-body {
-      margin-bottom: 40px;
-    }
-      /* the clearfix hack */
-    .footer-body::after {
-      content: "";
-      display: block;
-      clear: both;
-    }
-    /* float the divs */
-    .footer-body > div {
-      float: left;
-      padding: 20px;
-    }
-    /* sets the width of the first column */
-    .footer-body > div:first-child {
-      font-size: 150%;
-      width: 35%;
-      text-align: center;
-    }
-    /* sets the width of the second column */
-    .footer-body > div:last-child {
-      width: 65%;
-    }
-    .footer-body ul {
-      list-style-type: none;
-      margin: 0px;
-      padding: 0px;
-      text-align: center;
-    }
-    .footer-body li > a {
-      color: white;
-      text-decoration: none;
-      margin-bottom: 7px;
-    }
-  </style>
+
+  .main {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 20px;
+    background: rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+  }
+
+  .dd {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dd-btn {
+    padding: 15px 20px;
+    background: #173459;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #f8f9f9;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    width: 180px;
+    text-align: center;
+  }
+
+  .dd-btn:hover {
+    background: #0b2a5f;
+    transform: scale(1.05);
+  }
+
+  .dd-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #f8f9f9;
+    color: #173459;
+    box-shadow: 0 18px 36px rgba(0,0,0,0.30), 0 14px 11px rgba(0,0,0,0.22);
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    opacity: 0;
+  }
+
+  .dd:hover .dd-content {
+    max-height: 200px;
+    opacity: 1;
+  }
+
+  .dd-content a {
+    display: block;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #173459;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .dd-content a:hover {
+    background: #173459;
+    color: #f8f9f9;
+  }
+
+  /* Footer */
+  footer {
+    background: #0b2a5f;
+    padding-top: 30px;
+    margin-top: auto;
+  }
+
+  .footer-body {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 20px;
+    color: #fff;
+  }
+
+  .footer-body > div:first-child {
+    font-size: 1.5em;
+    font-weight: bold;
+    flex: 1 1 35%;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .footer-body > div:last-child {
+    flex: 1 1 60%;
+    margin-bottom: 15px;
+  }
+
+  .footer-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .footer-body li a {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .footer-body li a:hover {
+    color: #50e3c2;
+  }
+
+  .footer-copyright {
+    text-align: center;
+    padding: 12px 0;
+    background: #081b3d;
+    font-size: 0.9em;
+  }
+</style>
 </head>
 <body>
   <div class="main">
-    
-   <div class="dd">
-    <button class="dd-btn"> Manager </button>
-    <div class="dd-content">
-      <a href="home/manager-register.html">Manager Register</a>
-      <a href="home/manager-login.html">Manager Login</a>
-      <a href="home/Manager search.html">Manager Search</a>
+    <div class="dd">
+      <button class="dd-btn">Manager</button>
+      <div class="dd-content">
+        <a href="home/manager-register.html">Manager Register</a>
+        <a href="home/manager-login.html">Manager Login</a>
+        <a href="home/Manager search.html">Manager Search</a>
+      </div>
     </div>
-  </div> 
-  <div class="dd">
-    <button class="dd-btn"> Employee </button>
-    <div class="dd-content">
-     <a href="home/employee-register.html">Employee Register</a>
-      <a href="home/employee-login.html">Employee Login</a>
+
+    <div class="dd">
+      <button class="dd-btn">Employee</button>
+      <div class="dd-content">
+        <a href="home/employee-register.html">Employee Register</a>
+        <a href="home/employee-login.html">Employee Login</a>
+         <a href="Employee/employee id.html">Employee Login</a>
+      </div>
+    </div>
+
+    <div class="dd">
+      <button class="dd-btn">Customer</button>
+      <div class="dd-content">
+        <a href="home/aadhar-register.html">Aadhar Register</a>
+        <a href="home/aadhar-lookup.html">Aadhar Lookup</a>
+      </div>
     </div>
   </div>
-  <div class="dd">
-    <button class="dd-btn"> Customer </button>
-    <div class="dd-content">
-    <a href="home/aadhar-register.html">Aadhar Register</a>
-     <a href="home/aadhar-lookup.html">Aadhar Lookup</a>
-    </div>
-  </div>
-  </div>
-  
-  <header></header>
+
   <main></main>
+
   <footer>
     <div class="footer-body">
-      <div> Your Brand Here. </div>
+      <div>Your Brand Here</div>
       <div>
-        <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis interdum dignissim nisl posuere efficitur. </p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis interdum dignissim nisl posuere efficitur.</p>
         <ul>
-          <li><a href="#"> About </a></li>
-          <li><a href="#"> Contact </a></li>
-          <li><a href="#"> Terms & Conditions </a></li>
-          <li><a href="#"> Privacy Policy </a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Terms & Conditions</a></li>
+          <li><a href="#">Privacy Policy</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-copyright">
-      © Copyright goes here.
+      © 2025 Your Brand. All Rights Reserved.
     </div>
   </footer>
 </body>

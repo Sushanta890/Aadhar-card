@@ -1,0 +1,38 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: lightblue;
+  margin: 0;
+  padding: 0;
+}
+
+.top-bar {
+  background-color: black;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+.login-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 300px;
+  margin: 50px auto;
+}
+
+input[type="text"], input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+}
+
+button[type="submit"] {
+  background-color: teal;
+  color: white;
+  padding: 10px;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+}
