@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BTC Deposit — Manager</title>
+<style>
+  :root{
+    --bg:#0b0b0b;
+    --glass:rgba(255,255,255,.08);
+    --gold:#f0c24b;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+  body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#060606,#141414 80%);
+    color:#fff;
+    overflow:hidden;
+  }
+  .bg{
+    position:fixed;inset:0;opacity:.05;
+    background-image:url('https://cryptologos.cc/logos/bitcoin-btc-logo.png');
+    background-repeat:repeat;
+    background-size:120px;
+    animation:move 25s linear infinite;
+  }
+  @keyframes move{
+    from{background-position:0 0}
+    to{background-position:1000px 1000px}
+  }
+  .card{
+    width:360px;padding:25px;
+    border-radius:14px;
+    background:var(--glass);
+    box-shadow:0 6px 25px rgba(0,0,0,.7);
+    backdrop-filter:blur(8px);
+    position:relative;
+    overflow:hidden;
+  }
+  h2{color:var(--gold);text-align:center;margin:0 0 16px}
+  input,button{
+    width:100%;padding:12px;margin:10px 0;
+    border-radius:8px;border:0;
+    background:rgba(255,255,255,.07);
+    color:#fff;font-size:15px;
+  }
+  button{
+    background:var(--gold);
+    color:#000;font-weight:700;
+    cursor:pointer;transition:.2s;
+  }
+  button:hover{transform:scale(1.03)}
+  .msg{text-align:center;font-size:14px;height:18px;margin-top:6px}
+  .coin{
+    position:absolute;
+    top:50%;left:50%;
+    width:20px;height:20px;
+    background:var(--gold);
+    border-radius:50%;
+    animation:fly 1s ease-out forwards;
+    opacity:0;
+  }
+  @keyframes fly{
+    0%{transform:translate(-50%,-50%) scale(.3);opacity:0.8}
+    50%{transform:translate(-50%,-150%) scale(1.5);opacity:1}
+    100%{transform:translate(-50%,-250%) scale(0);opacity:0}
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="card">
+    <h2>Manager — Deposit Balance</h2>
+    <input id="accountNo" placeholder="Enter Manager Account No">
+    <input id="amount" type="number" placeholder="Enter Amount" min="1">
+    <button id="depositBtn">Deposit</button>
+    <div class="msg" id="msg"></div>
+    <div class="small" style="text-align:center;margin-top:10px">
+      <a href="home.html" style="color:var(--gold)">← Back to Home</a>
+    </div>
+  </div>
+
+<script>
+function loadUsers(){ try { return JSON.parse(localStorage.getItem('btc_users')||'[]') } catch(e){return []} }
+function saveUsers(u){ localStorage.setItem('btc_users', JSON.stringify(u)) }
+
+const btn = document.getElementById('depositBtn');
+const msg = document.getElementById('msg');
+
+btn.addEventListener('click',()=>{
+  const acc = document.getElementById('accountNo').value.trim();
+  const amt = parseFloat(document.getElementById('amount').value);
+  if(!acc || !amt || amt<=0){
+    msg.style.color='salmon';
+    msg.textContent='Enter valid account & amount';
+    return;
+  }
+  let users = loadUsers();
+  const user = users.find(u=>u.accountNo===acc && u.role==='BankManager');
+  if(!user){
+    msg.style.color='salmon';
+    msg.textContent='Bank Manager account not found';
+    return;
+  }
+  user.balance = (user.balance||0) + amt;
+  saveUsers(users);
+  msg.style.color='#b9f6c1';
+  msg.textContent=`₹${amt} added successfully! New balance: ₹${user.balance}`;
+  animateCoin();
+});
+
+function animateCoin(){
+  const c=document.createElement('div');
+  c.className='coin';
+  document.body.appendChild(c);
+  setTimeout(()=>c.remove(),1000);
+}
+</script>
+</body>
+</html>

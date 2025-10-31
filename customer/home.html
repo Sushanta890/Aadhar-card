@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BTC ⇄ INR Converter</title>
+<style>
+:root{--bg:#0b0b0b;--glass:rgba(255,255,255,.08);--gold:#f0c24b}
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+body{
+  margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#050506,#141416 70%);
+  color:#fff;overflow:hidden;
+}
+.bg{position:fixed;inset:0;opacity:.04;
+  background-image:url('https://cryptologos.cc/logos/bitcoin-btc-logo.png');
+  background-repeat:repeat;background-size:120px;
+  animation:move 25s linear infinite}
+@keyframes move{from{background-position:0 0}to{background-position:1500px 1500px}}
+.card{
+  width:360px;padding:22px;border-radius:14px;
+  background:var(--glass);box-shadow:0 6px 30px rgba(0,0,0,.7);
+  backdrop-filter:blur(6px);text-align:center
+}
+h2{color:var(--gold);margin:0 0 14px;text-align:center}
+select,input,button{
+  width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;
+  background:rgba(255,255,255,.06);color:#fff
+}
+button{
+  background:var(--gold);color:#000;font-weight:700;cursor:pointer;
+  transition:.3s
+}
+button:hover{transform:scale(1.03)}
+.msg{height:18px;text-align:center;font-size:14px;margin-top:6px}
+.info{background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin:10px 0;text-align:left}
+a.back{color:var(--gold);text-decoration:none;font-size:14px;display:inline-block;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="card">
+  <h2>Bitcoin ⇄ INR Converter</h2>
+  <div id="info"></div>
+  <select id="type">
+    <option value="">Select Conversion Type</option>
+    <option value="btcToInr">Bitcoin → Indian Rupees</option>
+    <option value="inrToBtc">Indian Rupees → Bitcoin</option>
+  </select>
+  <input id="amount" type="number" placeholder="Enter amount" />
+  <button id="btnConvert">Convert</button>
+  <div class="msg" id="msg"></div>
+  <a class="back" href="login.html">← Back to Dashboard</a>
+</div>
+
+<script>
+/* -------- Load/Save Helpers -------- */
+function loadUsers(){try{return JSON.parse(localStorage.getItem('btc_customers')||'[]')}catch(e){return[]}}
+function saveUsers(u){localStorage.setItem('btc_customers',JSON.stringify(u))}
+
+/* -------- Display User -------- */
+const act=JSON.parse(localStorage.getItem('btc_active')||'null')
+if(!act){
+  alert('Please login first.')
+  location.href='login.html'
+}
+const BTC_RATE = 5000000 // 1 BTC = ₹50,00,000 (editable)
+showInfo(act)
+
+function showInfo(u){
+  document.getElementById('info').innerHTML = `
+    <p><b>Name:</b> ${u.fname} ${u.lname}</p>
+    <p><b>Account No:</b> ${u.accountNo}</p>
+    <p><b>Bitcoin Balance:</b> ₿ ${u.btcBalance.toFixed(6)}</p>
+    <p><b>INR Balance:</b> ₹ ${u.inrBalance.toFixed(2)}</p>
+    <p style="font-size:13px;color:#ccc">Rate: 1 BTC = ₹${BTC_RATE.toLocaleString()}</p>
+  `
+}
+
+/* -------- Conversion Logic -------- */
+document.getElementById('btnConvert').onclick=()=>{
+  const type=document.getElementById('type').value
+  const amt=parseFloat(document.getElementById('amount').value)
+  const msg=document.getElementById('msg')
+  if(!type||!amt||amt<=0){msg.style.color='salmon';msg.textContent='Enter valid details';return}
+
+  let users=loadUsers()
+  let active=JSON.parse(localStorage.getItem('btc_active'))
+  const user=users.find(u=>u.accountNo===active.accountNo)
+  if(!user){msg.style.color='salmon';msg.textContent='Account not found';return}
+
+  if(type==='btcToInr'){
+    // Bitcoin to INR
+    if(user.btcBalance < amt){
+      msg.style.color='salmon';msg.textContent='Not enough Bitcoin';return
+    }
+    const inr=amt*BTC_RATE
+    user.btcBalance -= amt
+    user.inrBalance += inr
+    msg.style.color='#b9f6c1'
+    msg.textContent=`Converted ₿${amt} → ₹${inr.toFixed(2)}`
+  }
+  else if(type==='inrToBtc'){
+    // INR to Bitcoin
+    const btc=amt/BTC_RATE
+    if(user.inrBalance < amt){
+      msg.style.color='salmon';msg.textContent='Not enough INR';return
+    }
+    user.inrBalance -= amt
+    user.btcBalance += btc
+    msg.style.color='#b9f6c1'
+    msg.textContent=`Converted ₹${amt.toFixed(2)} → ₿${btc.toFixed(6)}`
+  }
+
+  // Update active + users
+  active.inrBalance = user.inrBalance
+  active.btcBalance = user.btcBalance
+  saveUsers(users)
+  localStorage.setItem('btc_active',JSON.stringify(active))
+  showInfo(user)
+  document.getElementById('amount').value=''
+}
+</script>
+</body>
+</html>

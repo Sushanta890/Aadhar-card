@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BTC Search</title>
+<style>
+  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#050506,#141416);color:#fff;font-family:Inter}
+  .bg{position:fixed;inset:0;opacity:.04;background-image:url('https://cryptologos.cc/logos/bitcoin-btc-logo.png');background-repeat:repeat;background-size:120px;animation:move 25s linear infinite}
+  @keyframes move{from{background-position:0 0}to{background-position:1500px 1500px}}
+  .box{width:360px;padding:20px;border-radius:12px;background:rgba(255,255,255,.05);backdrop-filter:blur(6px)}
+  h2{color:#f0c24b;margin:0 0 12px;text-align:center}
+  input,button{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;background:rgba(255,255,255,.04);color:#fff}
+  button{background:#f0c24b;color:#000;font-weight:700;cursor:pointer}
+  .result{margin-top:12px;background:rgba(255,255,255,.03);padding:12px;border-radius:8px;display:none}
+  .row{color:#ffeb99;margin:6px 0}
+  .small{text-align:center;margin-top:10px;color:#ddd;font-size:13px}
+  a{color:#f0c24b}
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="box">
+    <h2>Search by Mobile</h2>
+    <input id="mobile" placeholder="Enter registered mobile number" />
+    <button id="btnSearch">Search</button>
+
+    <div class="result" id="result">
+      <div class="row"><strong>Name:</strong> <span id="name"></span></div>
+      <div class="row"><strong>Role:</strong> <span id="role"></span></div>
+      <div class="row"><strong>Account No:</strong> <span id="account"></span></div>
+      <div class="row"><strong>ID:</strong> <span id="idv"></span></div>
+      <div class="row"><strong>Password:</strong> <span id="pwd"></span></div>
+      <div class="row"><strong>Balance:</strong> <span id="bal"></span></div>
+    </div>
+
+    <div class="small"><a href="login.html">Back to Login</a> • <a href="home.html">Home</a></div>
+  </div>
+
+<script>
+function loadUsers(){ try{return JSON.parse(localStorage.getItem('btc_users')||'[]')}catch(e){return[]} }
+document.getElementById('btnSearch').addEventListener('click', ()=>{
+  const m = document.getElementById('mobile').value.trim()
+  const res = document.getElementById('result')
+  if(!m){ alert('Enter mobile'); return }
+  const users = loadUsers()
+  const u = users.find(x => x.mobile === m)
+  if(!u){ alert('No record found'); res.style.display='none'; return }
+  document.getElementById('name').textContent = u.fname + ' ' + u.lname
+  document.getElementById('role').textContent = u.role
+  document.getElementById('account').textContent = u.accountNo
+  document.getElementById('idv').textContent = u.id
+  document.getElementById('pwd').textContent = u.password
+  document.getElementById('bal').textContent = (u.balance||0).toFixed(2)
+  res.style.display = 'block'
+})
+</script>
+</body>
+</html>

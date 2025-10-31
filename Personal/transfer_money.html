@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transfer Money | Bitcoin Portal</title>
+<style>
+:root{--bg:#0b0b0b;--glass:rgba(255,255,255,.08);--gold:#f0c24b}
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+body{
+  margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#050506,#141416 70%);
+  color:#fff;
+}
+.card{
+  width:340px;padding:22px;border-radius:14px;
+  background:var(--glass);box-shadow:0 6px 30px rgba(0,0,0,.7);
+  backdrop-filter:blur(6px)
+}
+h2{text-align:center;color:var(--gold);margin-bottom:14px}
+input,button{
+  width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;
+  background:rgba(255,255,255,.06);color:#fff
+}
+button{
+  background:var(--gold);color:#000;font-weight:700;cursor:pointer
+}
+.msg{text-align:center;height:18px;margin-top:6px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Transfer Money</h2>
+  <input id="empAcc" placeholder="Employee Account Number" />
+  <input id="custAcc" placeholder="Customer Account Number" />
+  <input id="amount" placeholder="Amount (INR)" type="number" />
+  <button id="btnTransfer">Transfer</button>
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+// --- Load Data ---
+function loadEmployees(){
+  try{return JSON.parse(localStorage.getItem('btc_users')||'[]')}catch(e){return[]}
+}
+function loadCustomers(){
+  try{return JSON.parse(localStorage.getItem('btc_customers')||'[]')}catch(e){return[]}
+}
+function saveEmployees(e){localStorage.setItem('btc_users',JSON.stringify(e))}
+function saveCustomers(c){localStorage.setItem('btc_customers',JSON.stringify(c))}
+
+document.getElementById('btnTransfer').addEventListener('click',()=>{
+  const empAcc=document.getElementById('empAcc').value.trim()
+  const custAcc=document.getElementById('custAcc').value.trim()
+  const amount=parseFloat(document.getElementById('amount').value)
+  const msg=document.getElementById('msg')
+
+  if(!empAcc||!custAcc||!amount||amount<=0){
+    msg.style.color='salmon';msg.textContent='Enter valid details';return
+  }
+
+  const employees=loadEmployees()
+  const customers=loadCustomers()
+
+  const emp=employees.find(u=>u.accountNo===empAcc)
+  const cust=customers.find(u=>u.accountNo===custAcc)
+
+  if(!emp){msg.style.color='salmon';msg.textContent='❌ Employee account not found';return}
+  if(!cust){msg.style.color='salmon';msg.textContent='❌ Customer account not found';return}
+
+  // Ensure balances exist
+  if(typeof emp.balance!=='number') emp.balance=0
+  if(typeof cust.btcBalance!=='number') cust.btcBalance=0
+
+  if(emp.balance<amount){
+    msg.style.color='salmon';msg.textContent='❌ Insufficient balance';return
+  }
+
+  // Transfer logic
+  emp.balance -= amount
+  cust.btcBalance += amount
+
+  saveEmployees(employees)
+  saveCustomers(customers)
+
+  msg.style.color='#b9f6c1'
+  msg.textContent='✅ Transfer Successful!'
+  alert(`₹${amount} transferred from Employee ${emp.fname} to Customer ${cust.fname}`)
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bitcoin Portal — Register</title>
+<style>
+:root{--bg:#0b0b0b;--glass:rgba(255,255,255,.08);--gold:#f0c24b}
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+body{
+  margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#050506,#141416 70%);
+  color:#fff;overflow:hidden;
+}
+.bg{position:fixed;inset:0;opacity:.04;
+  background-image:url('https://cryptologos.cc/logos/bitcoin-btc-logo.png');
+  background-repeat:repeat;background-size:120px;
+  animation:move 25s linear infinite}
+@keyframes move{from{background-position:0 0}to{background-position:1500px 1500px}}
+.card{
+  width:370px;padding:22px;border-radius:14px;
+  background:var(--glass);box-shadow:0 6px 30px rgba(0,0,0,.7);
+  backdrop-filter:blur(6px);overflow-y:auto;max-height:95vh;
+}
+h2{color:var(--gold);margin:0 0 14px;text-align:center}
+input,select,textarea,button{
+  width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;
+  background:rgba(255,255,255,.06);color:#fff
+}
+textarea{resize:none;height:60px}
+button{
+  background:var(--gold);color:#000;font-weight:700;cursor:pointer;
+  transition:.3s
+}
+button:hover{transform:scale(1.03)}
+.msg{height:18px;text-align:center;font-size:14px;margin-top:6px}
+.small{font-size:13px;color:#ddd;margin-top:6px;text-align:center}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="card">
+  <h2>Bitcoin Portal — Register</h2>
+  <input id="fname" placeholder="First name" />
+  <input id="lname" placeholder="Last name" />
+  <input id="mobile" placeholder="Mobile number" inputmode="numeric" maxlength="10" />
+  <input id="aadhar" placeholder="Aadhaar number (12 digits)" inputmode="numeric" maxlength="12" />
+  <input id="email" placeholder="Email address" type="email" />
+  <select id="atype">
+    <option value="">Select Account Type</option>
+    <option>Savings</option>
+    <option>Current</option>
+  </select>
+  <textarea id="address" placeholder="Full Address"></textarea>
+  <button id="btnRegister">Open Account</button>
+  <div class="msg" id="msg"></div>
+  <div class="small">
+    Already have an account? <a href="login.html">Login</a><br>
+    <a href="Find My Account.html">Find My Account</a>
+  </div>
+</div>
+
+<script>
+function loadUsers(){ 
+  try{return JSON.parse(localStorage.getItem('btc_customers')||'[]')}catch(e){return[]} 
+}
+function saveUsers(u){localStorage.setItem('btc_customers',JSON.stringify(u))}
+function genAccountNo(){return 'BTC'+Math.floor(100000+Math.random()*900000)}
+function genPIN(){return Math.floor(1000+Math.random()*9000)}
+
+document.getElementById('btnRegister').addEventListener('click',()=>{
+  const fname=document.getElementById('fname').value.trim()
+  const lname=document.getElementById('lname').value.trim()
+  const mobile=document.getElementById('mobile').value.trim()
+  const aadhar=document.getElementById('aadhar').value.trim()
+  const email=document.getElementById('email').value.trim()
+  const atype=document.getElementById('atype').value
+  const address=document.getElementById('address').value.trim()
+  const msg=document.getElementById('msg')
+
+  if(!fname||!lname||!mobile||!aadhar||!email||!atype||!address){
+    msg.style.color='salmon';msg.textContent='Please fill all fields';return
+  }
+  if(mobile.length!==10){msg.style.color='salmon';msg.textContent='Enter valid 10-digit mobile';return}
+  if(aadhar.length!==12){msg.style.color='salmon';msg.textContent='Enter valid 12-digit Aadhaar';return}
+
+  const users=loadUsers()
+  if(users.some(u=>u.mobile===mobile)){msg.style.color='salmon';msg.textContent='Mobile already registered';return}
+  if(users.some(u=>u.aadhar===aadhar)){msg.style.color='salmon';msg.textContent='Aadhaar already registered';return}
+
+  const accountNo=genAccountNo()
+  const pin=genPIN()
+
+  const user={
+    fname,lname,mobile,aadhar,email,atype,address,
+    accountNo,pin,
+    btcBalance:0,inrBalance:0,
+    created:new Date().toISOString()
+  }
+
+  users.push(user)
+  saveUsers(users)
+
+  msg.style.color='#b9f6c1'
+  msg.textContent='Account created successfully! Redirecting...'
+  setTimeout(()=>location.href='login.html',1000)
+})
+</script>
+</body>
+</html>
