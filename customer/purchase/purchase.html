@@ -5,128 +5,183 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bitcoin Portal — Purchase</title>
 <style>
-:root{--bg:#0b0b0b;--glass:rgba(255,255,255,.08);--gold:#f0c24b}
-*{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+:root{
+  --bg:#050506;
+  --gold:#f0c24b;
+  --glass:rgba(255,255,255,.08);
+}
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial;}
 body{
   margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#050506,#141416 70%);
+  background:radial-gradient(circle at 25% 25%, #0d0d0e, #000 90%);
   color:#fff;overflow:hidden;
 }
-.bg{position:fixed;inset:0;opacity:.04;
-  background-image:url('https://cryptologos.cc/logos/bitcoin-btc-logo.png');
-  background-repeat:repeat;background-size:120px;
-  animation:move 25s linear infinite;z-index:-1}
-@keyframes move{from{background-position:0 0}to{background-position:1500px 1500px}}
+.bg{position:fixed;inset:0;background:url('https://cryptologos.cc/logos/bitcoin-btc-logo.png') repeat;
+  background-size:110px;opacity:.04;animation:move 35s linear infinite;z-index:-1;}
+@keyframes move{from{background-position:0 0;}to{background-position:1800px 1800px;}}
 .card{
-  width:380px;padding:22px;border-radius:14px;
-  background:var(--glass);box-shadow:0 6px 30px rgba(0,0,0,.7);
-  backdrop-filter:blur(6px);
-  text-align:center;
+  width:400px;padding:25px;background:var(--glass);border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.8);backdrop-filter:blur(8px);text-align:center;
 }
-h2{color:var(--gold);margin:0 0 14px}
+h2{color:var(--gold);margin-bottom:15px;}
 input,button{
-  width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;
-  background:rgba(255,255,255,.06);color:#fff
+  width:100%;padding:11px;margin:7px 0;border-radius:8px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.06);color:#fff;font-size:.95rem;
 }
 button{
-  background:var(--gold);color:#000;font-weight:700;cursor:pointer;
-  transition:.3s
+  background:var(--gold);color:#000;font-weight:700;cursor:pointer;transition:.3s;
 }
-button:hover{transform:scale(1.03)}
-.balance{
-  background:rgba(255,255,255,.05);
-  padding:10px;border-radius:10px;margin:10px 0;
-  text-align:center;font-weight:bold
-}
-.msg{height:18px;text-align:center;font-size:14px;margin-top:6px}
-table{width:100%;margin-top:14px;border-collapse:collapse;font-size:14px}
-th,td{padding:6px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1)}
-th{color:var(--gold)}
-a{color:var(--gold);text-decoration:none}
-a:hover{text-decoration:underline}
+button:hover{transform:scale(1.05);}
+.balance{background:rgba(255,255,255,.05);padding:10px;border-radius:8px;margin:10px 0;
+  font-weight:700;color:var(--gold);}
+.msg{height:18px;text-align:center;font-size:14px;margin-top:6px;}
+table{width:100%;margin-top:15px;border-collapse:collapse;font-size:14px;}
+th,td{padding:6px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);}
+th{color:var(--gold);}
+tr.fadeInRow{animation:fadeRow .8s ease;}
+@keyframes fadeRow{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.successAnim{animation:pop 0.6s ease forwards;}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.2);}100%{transform:scale(1);}}
 </style>
 </head>
 <body>
 <div class="bg"></div>
+
 <div class="card">
   <h2>Purchase Portal</h2>
-  <div class="balance">INR Balance: ₹<span id="inrBal">0</span></div>
+
+  <input id="empAcc" placeholder="Enter Customer Account No (e.g. BTC123456)">
+  <button id="btnCheck">Check Balance</button>
+
+  <div class="balance" id="empBalanceBox" style="display:none;">
+    Account Balance: ₹<span id="inrBal">0.00</span>
+  </div>
 
   <input id="item" placeholder="Enter item name">
   <input id="amount" placeholder="Enter amount (₹)" inputmode="numeric">
   <button id="btnPurchase">Purchase</button>
+
   <div class="msg" id="msg"></div>
 
-  <h3 style="color:var(--gold);margin-top:10px">Transaction History</h3>
+  <h3 style="color:var(--gold);margin-top:14px">Transaction History</h3>
   <table id="historyTable">
-    <tr><th>Item</th><th>Amount (₹)</th><th>Date/Time</th></tr>
+    <tr><th>Item</th><th>Amount (₹)</th><th>Date / Time</th></tr>
   </table>
-
-  <div style="margin-top:12px"><a href="login.html">← Back to Login</a></div>
 </div>
 
 <script>
-// Fixed Employee Account
-const EMPLOYEE_ACC = 'BTC000001';
+// === Local Storage Helpers ===
+function loadUsers(){
+  try{return JSON.parse(localStorage.getItem('btc_users')||'[]')}
+  catch(e){return[]}
+}
+function saveUsers(u){ localStorage.setItem('btc_users',JSON.stringify(u)) }
+function norm(s){ return String(s||'').trim(); }
 
-function loadUsers(){try{return JSON.parse(localStorage.getItem('btc_customers')||'[]')}catch(e){return[]}}
-function saveUsers(u){localStorage.setItem('btc_customers',JSON.stringify(u))}
-function getActive(){try{return JSON.parse(localStorage.getItem('btc_active'))}catch(e){return null}}
-
+// === DOM References ===
 const msg=document.getElementById('msg');
+const empBalBox=document.getElementById('empBalanceBox');
 const inrBal=document.getElementById('inrBal');
 const table=document.getElementById('historyTable');
+let emp=null;
 
-let users=loadUsers();
-let user=getActive();
-if(!user){alert('Please login first.');location.href='login.html';}
-
-function refresh(){
-  inrBal.textContent=user.inrBalance.toFixed(2);
-  const oldRows=table.querySelectorAll('tr:not(:first-child)');
-  oldRows.forEach(r=>r.remove());
-  (user.history||[]).forEach(tx=>{
+// === Refresh transaction history ===
+function refreshHistory(){
+  const rows=table.querySelectorAll('tr:not(:first-child)');
+  rows.forEach(r=>r.remove());
+  if(!emp || !emp.history) return;
+  emp.history.forEach(tx=>{
     const row=table.insertRow(-1);
+    row.classList.add('fadeInRow');
     row.insertCell(0).textContent=tx.item;
-    row.insertCell(1).textContent=tx.amount;
+    row.insertCell(1).textContent='₹'+tx.amount;
     row.insertCell(2).textContent=new Date(tx.time).toLocaleString();
   });
 }
-refresh();
 
-document.getElementById('btnPurchase').onclick=()=>{
-  const item=document.getElementById('item').value.trim();
-  const amt=parseFloat(document.getElementById('amount').value);
-  if(!item||!amt||amt<=0){
-    msg.style.color='salmon';msg.textContent='Enter valid item and amount';return;
+// === Check Customer Account ===
+document.getElementById('btnCheck').onclick=()=>{
+  const acc=norm(document.getElementById('empAcc').value);
+  const users=loadUsers();
+  if(!acc){
+    msg.style.color='salmon';
+    msg.textContent='Enter account number';
+    return;
   }
-  if(user.inrBalance<amt){
-    msg.style.color='salmon';msg.textContent='Insufficient INR balance';return;
+
+  emp=users.find(u=>norm(u.accountNo).toLowerCase()===acc.toLowerCase());
+  if(!emp){
+    msg.style.color='salmon';
+    msg.textContent='Account not found';
+    empBalBox.style.display='none';
+    return;
   }
 
-  // Deduct amount
-  user.inrBalance-=amt;
-
-  // Transfer to employee account
-  const emp=users.find(u=>u.accountNo===EMPLOYEE_ACC);
-  if(emp){emp.inrBalance+=amt;}
-
-  // Save transaction
-  user.history=user.history||[];
-  user.history.push({item,amount:amt,time:new Date().toISOString()});
-
-  const idx=users.findIndex(u=>u.accountNo===user.accountNo);
-  if(idx>-1)users[idx]=user;
-  saveUsers(users);
-  localStorage.setItem('btc_active',JSON.stringify(user));
-
-  msg.style.color='#b9f6c1';
-  msg.textContent='Purchase successful!';
-  document.getElementById('item').value='';
-  document.getElementById('amount').value='';
-  refresh();
+  emp.balance=emp.balance||0;
+  empBalBox.style.display='block';
+  inrBal.textContent=emp.balance.toFixed(2);
+  msg.textContent='';
+  refreshHistory();
 };
 
+// === Purchase & Auto Transfer ===
+document.getElementById('btnPurchase').onclick=()=>{
+  if(!emp){
+    msg.style.color='salmon';
+    msg.textContent='Please check account first';
+    return;
+  }
+
+  const item=norm(document.getElementById('item').value);
+  const amt=parseFloat(document.getElementById('amount').value);
+  if(!item || !amt || amt<=0){
+    msg.style.color='salmon';
+    msg.textContent='Enter valid item and amount';
+    return;
+  }
+
+  const users=loadUsers();
+  const manager=users.find(u=>u.role==='BankManager');
+  if(!manager){
+    msg.style.color='salmon';
+    msg.textContent='Bank Manager account missing';
+    return;
+  }
+
+  // balance check & transfer
+  if(emp.balance<amt){
+    msg.style.color='salmon';
+    msg.textContent='Insufficient balance';
+    return;
+  }
+
+  emp.balance-=amt;
+  manager.balance=(manager.balance||0)+amt;
+
+  // record transaction
+  emp.history=emp.history||[];
+  emp.history.push({
+    item, amount:amt, time:new Date().toISOString(),
+    to:manager.accountNo
+  });
+
+  // update both users
+  const ei=users.findIndex(u=>u.accountNo===emp.accountNo);
+  const mi=users.findIndex(u=>u.accountNo===manager.accountNo);
+  if(ei>-1) users[ei]=emp;
+  if(mi>-1) users[mi]=manager;
+  saveUsers(users);
+
+  // update UI
+  inrBal.textContent=emp.balance.toFixed(2);
+  empBalBox.classList.add('successAnim');
+  setTimeout(()=>empBalBox.classList.remove('successAnim'),600);
+  msg.style.color='#b9f6c1';
+  msg.textContent=`₹${amt} transferred to Manager (${manager.accountNo}) successfully!`;
+  document.getElementById('item').value='';
+  document.getElementById('amount').value='';
+  refreshHistory();
+};
 </script>
 </body>
 </html>
