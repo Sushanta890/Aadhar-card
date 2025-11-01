@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Set Bank Manager PIN</title>
+<style>
+  body{
+    margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#050506,#141416 70%);
+    font-family:Inter,system-ui,Arial;color:#fff;
+  }
+  .card{
+    width:360px;padding:26px;border-radius:14px;
+    background:rgba(255,255,255,.06);backdrop-filter:blur(6px);
+    box-shadow:0 6px 25px rgba(0,0,0,.7);
+    text-align:center;
+  }
+  h2{color:#f0c24b;margin-bottom:10px}
+  input{ width:100%;padding:12px;margin:10px 0;border-radius:8px;border:0;
+    background:rgba(255,255,255,.07);color:#fff;font-size:16px;text-align:center; }
+  input.pin{ letter-spacing:6px; font-size:20px; }
+  button{ background:#f0c24b;color:#000;font-weight:700;border:0;border-radius:8px;
+    padding:10px 0;width:100%;cursor:pointer;margin-top:8px; }
+  .msg{margin-top:10px;height:20px;font-size:14px}
+  .hint{font-size:13px;color:#ddd;margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Set Bank Manager PIN</h2>
+
+    <input id="accno" placeholder="Enter Bank Manager Account No (e.g. BTC123456)" autocomplete="off" />
+    <input id="pin1" class="pin" type="password" maxlength="4" placeholder="Enter 4-digit PIN" inputmode="numeric" />
+    <input id="pin2" class="pin" type="password" maxlength="4" placeholder="Re-enter PIN" inputmode="numeric" />
+    <button id="btnSave">Save PIN</button>
+
+    <div class="msg" id="msg"></div>
+    <div class="hint">Make sure you enter the Bank Manager's <strong>account number</strong>. Only users with role <em>BankManager</em> can set this PIN here.</div>
+  </div>
+
+<script>
+  // storage helpers
+  function loadUsers(){ try { return JSON.parse(localStorage.getItem('btc_users')||'[]'); } catch(e){ return []; } }
+  function saveUsers(u){ localStorage.setItem('btc_users', JSON.stringify(u)); }
+
+  const msgEl = document.getElementById('msg');
+  function showMsg(text, color='salmon'){
+    msgEl.style.color = color;
+    msgEl.textContent = text;
+  }
+
+  document.getElementById('btnSave').addEventListener('click', ()=>{
+    const acc = (document.getElementById('accno').value || '').trim();
+    const p1  = (document.getElementById('pin1').value || '').trim();
+    const p2  = (document.getElementById('pin2').value || '').trim();
+
+    // basic validations
+    if(!acc){ showMsg('Enter account number'); return; }
+    if(p1.length !== 4 || p2.length !== 4){ showMsg('PIN must be exactly 4 digits'); return; }
+    if(!/^\d{4}$/.test(p1) || !/^\d{4}$/.test(p2)){ showMsg('PIN must contain only digits'); return; }
+    if(p1 !== p2){ showMsg('PINs do not match'); return; }
+
+    const users = loadUsers();
+    const idx = users.findIndex(u => (u.accountNo || '').toString() === acc.toString());
+
+    if(idx === -1){ showMsg('Account number not found'); return; }
+
+    const user = users[idx];
+    if(user.role !== 'BankManager'){
+      showMsg('Account is not a Bank Manager account'); return;
+    }
+
+    // save PIN (store as string)
+    users[idx].pin = p1;
+    // optionally force a flag that pinSet = true
+    users[idx].pinSet = true;
+    saveUsers(users);
+
+    // remove any temp markers if present
+    try { localStorage.removeItem('current_mobile'); } catch(e){}
+
+    showMsg('PIN saved — redirecting to login...', '#b9f6c1');
+    setTimeout(() => { location.href = 'login.html'; }, 900);
+  });
+
+  // convenience: allow Enter key to submit
+  document.querySelectorAll('#accno,#pin1,#pin2').forEach(el=>{
+    el.addEventListener('keydown', (ev)=>{ if(ev.key === 'Enter') document.getElementById('btnSave').click(); })
+  });
+</script>
+</body>
+</html>

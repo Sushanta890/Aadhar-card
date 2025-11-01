@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BTC Login</title>
+<style>
+  body{
+    margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#050506,#141416 70%);
+    color:#fff;font-family:Inter,system-ui,Arial;
+  }
+  .card{
+    width:340px;padding:25px;border-radius:14px;
+    background:rgba(255,255,255,.06);backdrop-filter:blur(6px);
+    box-shadow:0 6px 25px rgba(0,0,0,.7);
+    text-align:center;
+  }
+  h2{color:#f0c24b}
+  input{
+    width:100%;padding:12px;margin:10px 0;
+    border-radius:8px;border:0;background:rgba(255,255,255,.07);
+    color:#fff;text-align:center;font-size:16px;
+  }
+  button{
+    background:#f0c24b;color:#000;font-weight:700;
+    border:0;border-radius:8px;padding:10px 0;width:100%;
+    cursor:pointer;
+  }
+  .msg{height:18px;font-size:14px;margin-top:10px}
+  a{color:#f0c24b;text-decoration:none}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Login</h2>
+    <input id="accno" placeholder="Enter Account Number">
+    <input id="pin" placeholder="Enter 4-digit PIN" maxlength="4" type="password" inputmode="numeric">
+    <button id="btnLogin">Login</button>
+    <div class="msg" id="msg"></div>
+     <div style="margin-top:10px"><a href="pin code/forgot.html">Pin create </a></div>
+    <div style="margin-top:10px"><a href="pin code/pin.html">Forgot Account or PIN?</a></div>
+  </div>
+
+<script>
+function loadUsers(){ try { return JSON.parse(localStorage.getItem('btc_users')||'[]') } catch(e){return []} }
+
+document.getElementById('btnLogin').addEventListener('click', ()=>{
+  const acc = document.getElementById('accno').value.trim()
+  const pin = document.getElementById('pin').value.trim()
+  const msg = document.getElementById('msg')
+
+  const users = loadUsers()
+  const user = users.find(u=>u.accountNo===acc && u.pin===pin)
+
+  if(!user){ msg.style.color='salmon'; msg.textContent='Invalid account or PIN'; return }
+
+  localStorage.setItem('logged_user', JSON.stringify(user))
+  msg.style.color='#b9f6c1'; msg.textContent='Login successful...'
+  setTimeout(()=> location.href='Personal Home.html', 1000)
+})
+</script>
+</body>
+</html>
