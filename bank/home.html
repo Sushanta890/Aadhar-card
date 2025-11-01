@@ -1,90 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bitcoin Portal</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bitcoin Portal — Dual Balance</title>
 <style>
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial}
   body{
-    margin:0;height:100vh;
-    background:linear-gradient(135deg,#030305,#121214);
-    color:#fff;display:flex;align-items:center;justify-content:center;
-    font-family:Inter
+    margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#020203,#121214);
+    color:#fff;overflow:hidden;
   }
-  .bg{position:fixed;inset:0;opacity:.04;
+  .bg{
+    position:fixed;inset:0;opacity:.05;
     background-image:url('https://cryptologos.cc/logos/bitcoin-btc-logo.png');
     background-repeat:repeat;background-size:120px;
-    animation:move 25s linear infinite}
-  @keyframes move{from{background-position:0 0}to{background-position:1500px 1500px}}
-  .card{
-    background:rgba(255,255,255,.05);
-    border-radius:12px;padding:24px;width:380px;text-align:center;
-    backdrop-filter:blur(6px);box-shadow:0 0 25px rgba(0,0,0,.7)
+    animation:move 25s linear infinite;
   }
-  h2{color:#f0c24b;margin-bottom:10px}
-  p{margin:8px 0;color:#ffeb99}
-  .balance{font-size:26px;font-weight:700;color:#b9f6c1}
-  a,button{margin-top:14px;display:inline-block;padding:10px 16px;
-    border-radius:8px;text-decoration:none;font-weight:700;border:0;cursor:pointer}
+  @keyframes move{from{background-position:0 0}to{background-position:1500px 1500px}}
+
+  .container{
+    display:flex;gap:24px;z-index:2;flex-wrap:wrap;justify-content:center;
+  }
+
+  .card{
+    background:rgba(255,255,255,.06);
+    backdrop-filter:blur(6px);
+    border-radius:16px;
+    padding:24px;
+    width:340px;
+    text-align:center;
+    box-shadow:0 6px 30px rgba(0,0,0,.6);
+    transition:transform .4s, box-shadow .4s;
+  }
+  .card:hover{transform:translateY(-6px);box-shadow:0 10px 40px rgba(0,0,0,.8)}
+  h2{color:#f0c24b;margin-bottom:8px;font-size:20px;text-shadow:0 0 6px #f0c24b55}
+  p{margin:6px 0;color:#ffeb99}
+  .balance{font-size:26px;font-weight:700;color:#b9f6c1;margin-top:10px;}
+  button,a{
+    margin-top:10px;padding:10px 16px;border-radius:8px;
+    border:0;cursor:pointer;text-decoration:none;font-weight:700;
+    display:inline-block;
+  }
   button{background:#f0c24b;color:#000}
-  a{background:transparent;border:1px solid #f0c24b;color:#f0c24b}
-  .refresh{animation:spin 1.5s linear infinite;display:inline-block;margin-left:5px}
+  a{border:1px solid #f0c24b;color:#f0c24b;background:transparent}
+  .split{
+    display:flex;align-items:center;justify-content:center;gap:20px;
+    animation:fadeIn 1s ease forwards;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+  .refresh{animation:spin 1.2s linear infinite;display:inline-block;margin-left:5px}
   @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  .inr{font-size:22px;color:#9ef;margin-top:12px}
+  .rate{font-size:13px;color:#aaa;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="bg"></div>
-<div class="card" id="profileCard">
-  <h2>Welcome — Bitcoin Portal</h2>
-  <div id="profile"></div>
-  <div style="margin-top:18px">
-    <button id="btnRefresh">🔄 Refresh</button>
-    <button id="btnLogout">Logout</button><br><br>
-    <a href="deposit.html">Deposit Balance</a>
+
+<div class="container">
+  <!-- Bitcoin card -->
+  <div class="card" id="btcCard">
+    <h2>Bitcoin Balance</h2>
+    <div id="btcProfile">
+      <p><strong>Name:</strong> —</p>
+      <p><strong>Account:</strong> —</p>
+      <p class="balance">BTC: —</p>
+    </div>
+    <div>
+      <button id="btnRefresh">🔄 Refresh</button>
+      <button id="btnLogout">Logout</button>
+    </div>
+  </div>
+
+  <!-- INR conversion card -->
+  <div class="card" id="inrCard">
+    <h2>INR Conversion</h2>
+    <p id="empName">—</p>
+    <p id="empAcc">—</p>
+    <p class="inr">INR: —</p>
+    <p class="rate" id="rateText">Fetching rate...</p>
   </div>
 </div>
 
 <script>
+/* --- helpers --- */
 function loadUsers(){ try{return JSON.parse(localStorage.getItem('btc_users')||'[]')}catch(e){return[]} }
 function saveUsers(u){ localStorage.setItem('btc_users', JSON.stringify(u)) }
 function getLogged(){ try{return JSON.parse(localStorage.getItem('btc_logged')||'null')}catch(e){return null} }
 function setLogged(u){ localStorage.setItem('btc_logged', JSON.stringify(u)) }
 
-const logged = getLogged()
-const profile = document.getElementById('profile')
+const logged = getLogged();
+if(!logged){ alert('Please login first'); location.href='login.html'; }
 
-if(!logged){ alert('Please login first'); location.href='login.html' }
+let rateINR = 0;
 
-function updateProfile(){
-  const users = loadUsers()
-  const fresh = users.find(u=>u.accountNo===logged.accountNo)
-  if(fresh){
-    setLogged(fresh)
-    profile.innerHTML = `
-      <p><strong>Name:</strong> ${fresh.fname} ${fresh.lname}</p>
-      <p><strong>Role:</strong> ${fresh.role}</p>
-      <p><strong>Mobile:</strong> ${fresh.mobile}</p>
-      <p class="balance">Balance: ${(fresh.balance||0).toFixed(2)} USD</p>
-      <p><strong>Account:</strong> ${fresh.accountNo}</p>
-      <p><strong>ID:</strong> ${fresh.id}</p>
-    `
+/* --- Fetch live BTC→INR rate --- */
+async function fetchRate(){
+  try{
+    const res = await fetch('https://api.coindesk.com/v1/bpi/currentprice/INR.json');
+    const data = await res.json();
+    rateINR = data.bpi.INR.rate_float;
+    document.getElementById('rateText').textContent = `1 BTC = ₹${rateINR.toLocaleString('en-IN')}`;
+  }catch(e){
+    rateINR = 9000000;
+    document.getElementById('rateText').textContent = `Offline rate: ₹${rateINR.toLocaleString('en-IN')}`;
   }
 }
-updateProfile()
 
+/* --- Update profile both sides --- */
+function updateProfile(){
+  const users = loadUsers();
+  const fresh = users.find(u=>u.accountNo===logged.accountNo);
+  if(!fresh) return;
+  setLogged(fresh);
+
+  const btcBal = (fresh.balance || 0).toFixed(6);
+  const inrVal = (fresh.balance || 0) * rateINR;
+
+  document.querySelector('#btcProfile').innerHTML = `
+    <p><strong>Name:</strong> ${fresh.fname} ${fresh.lname}</p>
+    <p><strong>Account:</strong> ${fresh.accountNo}</p>
+    <p class="balance">BTC: ${btcBal}</p>
+  `;
+  document.querySelector('#empName').textContent = fresh.fname + ' ' + fresh.lname;
+  document.querySelector('#empAcc').textContent = 'Account: ' + fresh.accountNo;
+  document.querySelector('.inr').textContent = 'INR: ₹' + inrVal.toLocaleString('en-IN',{maximumFractionDigits:2});
+}
+
+fetchRate().then(updateProfile);
+
+/* --- Refresh button --- */
 document.getElementById('btnRefresh').addEventListener('click',()=>{
-  const btn=document.getElementById('btnRefresh')
-  btn.innerHTML='🔁 <span class="refresh">⟳</span> Refreshing...'
-  setTimeout(()=>{
-    updateProfile()
-    btn.textContent='🔄 Refresh'
-  },600)
-})
+  const btn=document.getElementById('btnRefresh');
+  btn.innerHTML='🔁 <span class="refresh">⟳</span> Refreshing...';
+  fetchRate().then(()=>{
+    updateProfile();
+    setTimeout(()=>btn.textContent='🔄 Refresh',600);
+  });
+});
 
+/* --- Logout --- */
 document.getElementById('btnLogout').addEventListener('click',()=>{
-  localStorage.removeItem('btc_logged')
-  location.href='login.html'
-})
+  localStorage.removeItem('btc_logged');
+  location.href='login.html';
+});
 </script>
 </body>
 </html>
