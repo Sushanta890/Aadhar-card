@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manager to Employee Transfer | Bitcoin Portal</title>
+<style>
+  :root{
+    --bg:#0b0b0b;--gold:#f0c24b;--glass:rgba(255,255,255,.06)
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+  body{
+    margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#050506,#141416 70%);
+    color:#fff;
+  }
+  .card{
+    width:340px;padding:22px;border-radius:14px;background:var(--glass);
+    box-shadow:0 0 25px rgba(0,0,0,.8);backdrop-filter:blur(6px);
+    text-align:center;
+  }
+  h2{color:var(--gold);margin-bottom:14px;text-shadow:0 0 10px var(--gold)}
+  input,button{
+    width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;
+    background:rgba(255,255,255,.08);color:#fff;font-size:15px;
+  }
+  button{
+    background:var(--gold);color:#000;font-weight:700;cursor:pointer;
+    transition:.3s;
+  }
+  button:hover{transform:scale(1.05)}
+  .msg{margin-top:10px;font-size:15px;height:18px;}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>💸 Manager → Employee Transfer</h2>
+  <input id="empAcc" placeholder="Employee Account Number">
+  <input id="amount" type="number" placeholder="Enter Amount">
+  <button onclick="transfer()">Submit</button>
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+function loadUsers(){ try{return JSON.parse(localStorage.getItem('btc_users')||'[]')}catch(e){return[]} }
+function saveUsers(u){ localStorage.setItem('btc_users', JSON.stringify(u)) }
+
+function transfer(){
+  const empAcc = document.getElementById('empAcc').value.trim()
+  const amount = parseFloat(document.getElementById('amount').value)
+  const msg = document.getElementById('msg')
+
+  if(!empAcc || isNaN(amount) || amount<=0){
+    msg.style.color='salmon'
+    msg.textContent='⚠️ Enter valid data'
+    return
+  }
+
+  let users = loadUsers()
+  let manager = users.find(u => u.role==='BankManager')
+  let employee = users.find(u => u.accountNo===empAcc && u.role==='Employee')
+
+  if(!manager){
+    msg.style.color='salmon'
+    msg.textContent='❌ Manager not found'
+    return
+  }
+  if(!employee){
+    msg.style.color='salmon'
+    msg.textContent='❌ Employee not found'
+    return
+  }
+
+  if(manager.balance < amount){
+    msg.style.color='orange'
+    msg.textContent='⚠️ Insufficient Manager Balance'
+    return
+  }
+
+  // Update balances
+  manager.balance -= amount
+  employee.balance += amount
+  saveUsers(users)
+
+  msg.style.color='#b9f6c1'
+  msg.textContent=`✅ ₹${amount} transferred to ${employee.fname} (${employee.accountNo})`
+
+  document.getElementById('empAcc').value=''
+  document.getElementById('amount').value=''
+}
+</script>
+
+</body>
+</html>
