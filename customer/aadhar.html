@@ -7,16 +7,35 @@
 <style>
 :root{--bg:#0b0b0b;--glass:rgba(255,255,255,.06);--gold:#f0c24b}
 *{box-sizing:border-box;font-family:Inter,system-ui,Arial}
-body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#050506,#141416 70%);color:#fff}
-.card{width:420px;padding:22px;border-radius:14px;background:var(--glass);box-shadow:0 6px 30px rgba(0,0,0,.7);backdrop-filter:blur(6px)}
+body{
+  margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#050506,#141416 70%);
+  color:#fff;
+}
+.card{
+  width:420px;padding:22px;border-radius:14px;
+  background:var(--glass);box-shadow:0 6px 30px rgba(0,0,0,.7);
+  backdrop-filter:blur(6px);
+}
 h2{color:var(--gold);margin:0 0 14px;text-align:center}
-input,button,select{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;background:rgba(255,255,255,.04);color:#fff}
-.result{margin-top:12px;padding:12px;border-radius:10px;background:rgba(0,0,0,.4)}
-.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.03)}
+input,button,select{
+  width:100%;padding:10px;margin:8px 0;border-radius:8px;border:0;
+  background:rgba(255,255,255,.04);color:#fff
+}
+.result{
+  margin-top:12px;padding:12px;border-radius:10px;background:rgba(0,0,0,.4)
+}
+.kv{
+  display:flex;justify-content:space-between;
+  padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.03)
+}
 .kv:last-child{border-bottom:0}
 .small{font-size:13px;color:#ddd;margin-top:8px;text-align:center}
 button.primary{background:var(--gold);color:#000;font-weight:700;cursor:pointer}
-.copy{background:transparent;border:1px solid rgba(255,255,255,.06);padding:6px;border-radius:8px;cursor:pointer}
+.copy{
+  background:transparent;border:1px solid rgba(255,255,255,.06);
+  padding:6px;border-radius:8px;cursor:pointer
+}
 .notfound{color:salmon;text-align:center;margin-top:8px}
 </style>
 </head>
@@ -28,11 +47,13 @@ button.primary{background:var(--gold);color:#000;font-weight:700;cursor:pointer}
   <div id="notfound" class="notfound" style="display:none"></div>
 
   <div id="result" class="result" style="display:none">
-    <div class="kv"><strong>Full name</strong><span id="r_name"></span></div>
+    <div class="kv"><strong>Full Name</strong><span id="r_name"></span></div>
     <div class="kv"><strong>Account No</strong><span id="r_account"></span></div>
     <div class="kv"><strong>Customer ID</strong><span id="r_custid"></span></div>
     <div class="kv"><strong>Mobile</strong><span id="r_mobile"></span></div>
     <div class="kv"><strong>Aadhaar</strong><span id="r_aadhar"></span></div>
+    <div class="kv"><strong>Email</strong><span id="r_email"></span></div>
+    <div class="kv"><strong>PIN Code</strong><span id="r_pin"></span></div>
     <div class="kv"><strong>INR Balance</strong><span id="r_inr"></span></div>
     <div class="kv"><strong>BTC Balance</strong><span id="r_btc"></span></div>
     <div class="kv"><strong>Created</strong><span id="r_created"></span></div>
@@ -46,29 +67,39 @@ button.primary{background:var(--gold);color:#000;font-weight:700;cursor:pointer}
 </div>
 
 <script>
-function loadUsers(){try{return JSON.parse(localStorage.getItem('btc_customers')||'[]')}catch(e){return[]}}
-function fmtDate(iso){try{return new Date(iso).toLocaleString()}catch(e){return iso}}
+function loadUsers(){
+  try{return JSON.parse(localStorage.getItem('btc_customers')||'[]')}
+  catch(e){return[]}
+}
+function fmtDate(iso){
+  try{return new Date(iso).toLocaleString()}
+  catch(e){return iso}
+}
 
-function findByQuery(q){if(!q) return null; const users=loadUsers();
-  // normalize
+function findByQuery(q){
+  if(!q) return null;
+  const users=loadUsers();
   q=q.trim();
-  // exact match by aadhaar/mobile/accountNo
   let u = users.find(x=>x.aadhar===q || x.mobile===q || x.accountNo===q);
   if(u) return u;
-  // try numeric-only compare (in case spaces)
   const digits=q.replace(/\D/g,'');
-  u = users.find(x=> (x.aadhar||'').replace(/\D/g,'')===digits || (x.mobile||'').replace(/\D/g,'')===digits);
+  u = users.find(x=>
+    (x.aadhar||'').replace(/\D/g,'')===digits ||
+    (x.mobile||'').replace(/\D/g,'')===digits
+  );
   return u || null;
 }
 
-function showUser(u){if(!u) return;
+function showUser(u){
+  if(!u) return;
   document.getElementById('r_name').textContent = (u.fname||'') + ' ' + (u.lname||'');
   document.getElementById('r_account').textContent = u.accountNo || '—';
-  // customer id: prefer stored custId, else construct one
   const cust = u.custId || (u.accountNo ? ('CUST'+u.accountNo.slice(-6)) : (u.pin?('CUST'+u.pin):'—'));
   document.getElementById('r_custid').textContent = cust;
   document.getElementById('r_mobile').textContent = u.mobile || '—';
   document.getElementById('r_aadhar').textContent = u.aadhar || '—';
+  document.getElementById('r_email').textContent = u.email || '—';
+  document.getElementById('r_pin').textContent = u.pin || '—';
   document.getElementById('r_inr').textContent = (typeof u.inrBalance!=='undefined'? ('₹'+u.inrBalance): '₹0');
   document.getElementById('r_btc').textContent = (typeof u.btcBalance!=='undefined'? (u.btcBalance+' BTC') : '0 BTC');
   document.getElementById('r_created').textContent = u.created ? fmtDate(u.created) : '—';
@@ -78,18 +109,30 @@ function showUser(u){if(!u) return;
 
 document.getElementById('btnFind').addEventListener('click',()=>{
   const q=document.getElementById('q').value.trim();
-  if(!q){document.getElementById('notfound').style.display='block';document.getElementById('notfound').textContent='Please enter Aadhaar / Mobile / Account No';document.getElementById('result').style.display='none';return}
+  if(!q){
+    document.getElementById('notfound').style.display='block';
+    document.getElementById('notfound').textContent='Please enter Aadhaar / Mobile / Account No';
+    document.getElementById('result').style.display='none';
+    return;
+  }
   const u = findByQuery(q);
-  if(!u){document.getElementById('notfound').style.display='block';document.getElementById('notfound').textContent='No account found';document.getElementById('result').style.display='none';return}
+  if(!u){
+    document.getElementById('notfound').style.display='block';
+    document.getElementById('notfound').textContent='No account found';
+    document.getElementById('result').style.display='none';
+    return;
+  }
   showUser(u);
 });
 
-// copy and open login
-document.getElementById('btnCopy').addEventListener('click',()=>{const t=document.getElementById('r_account').textContent;navigator.clipboard?.writeText(t).then(()=>alert('Account number copied'))})
-document.getElementById('btnOpenLogin').addEventListener('click',()=>{location.href='login.html'})
-
-// allow Enter key
-document.getElementById('q').addEventListener('keydown',(e)=>{if(e.key==='Enter') document.getElementById('btnFind').click()})
+document.getElementById('btnCopy').addEventListener('click',()=>{
+  const t=document.getElementById('r_account').textContent;
+  navigator.clipboard?.writeText(t).then(()=>alert('Account number copied'));
+});
+document.getElementById('btnOpenLogin').addEventListener('click',()=>{location.href='login.html'});
+document.getElementById('q').addEventListener('keydown',(e)=>{
+  if(e.key==='Enter') document.getElementById('btnFind').click();
+});
 </script>
 </body>
 </html>
