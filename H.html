@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quick Register & Login</title>
+  <style>
+    /* Simple, clean styles */
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;padding:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#f3f4f6}
+    .card{width:360px;background:white;padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+    h2{margin:0 0 12px;font-size:18px}
+    label{display:block;margin-top:8px;font-size:13px;color:#333}
+    input{width:100%;padding:8px 10px;margin-top:6px;border-radius:6px;border:1px solid #ddd}
+    .btn{width:100%;padding:10px;margin-top:12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:600;cursor:pointer}
+    .small{font-size:13px;color:#555;margin-top:8px}
+    .result{background:#f8fafc;border:1px solid #e6eef8;padding:10px;border-radius:8px;margin-top:10px}
+    .row{display:flex;gap:8px}
+    .half{flex:1}
+    .link{display:block;margin-top:8px;text-align:center;color:#2563eb;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Register</h2>
+    <div id="register-form">
+      <div class="row">
+        <div class="half">
+          <label>First name</label>
+          <input id="firstName" placeholder="First name" />
+        </div>
+        <div class="half">
+          <label>Last name</label>
+          <input id="lastName" placeholder="Last name" />
+        </div>
+      </div>
+      <label>Mobile number</label>
+      <input id="mobile" placeholder="10-digit mobile" />
+      <label>Email ID</label>
+      <input id="email" placeholder="you@example.com" />
+      <button class="btn" id="registerBtn">Register</button>
+      <div class="small">Note: Account number and Customer ID are auto-generated.</div>
+      <div id="regResult" class="result" style="display:none"></div>
+    </div>
+
+    <hr style="margin:16px 0" />
+
+    <h2>Login</h2>
+    <div id="login-form">
+      <label>Mobile number</label>
+      <input id="loginMobile" placeholder="Registered mobile" />
+      <button class="btn" id="loginBtn">Login</button>
+      <div id="loginResult" class="result" style="display:none"></div>
+    </div>
+
+    <div class="link" id="clearAll">Reset stored users (on server)</div>
+  </div>
+
+<script>
+/*
+  IMPORTANT:
+  - API_BASE default is http://127.0.0.1:5000 which works if you run Flask in Termux on the same device.
+  - If Termux and SPCK are not sharing localhost, replace API_BASE with your Android device IP,
+    e.g. 'http://192.168.1.10:5000'
+*/
+const API_BASE = 'http://127.0.0.1:5000';
+
+// Utility to show messages
+function show(el, html){
+  el.style.display = 'block';
+  el.innerHTML = html;
+}
+
+// Generate client-side IDs (informational only)
+function genAccountNumber(){
+  // 12-digit random (non-cryptographic)
+  let num = Math.floor(100000000000 + Math.random()*900000000000).toString();
+  return num;
+}
+function genCustomerId(){
+  return 'CID' + Math.floor(10000000 + Math.random()*90000000).toString();
+}
+
+// Register
+document.getElementById('registerBtn').addEventListener('click', async ()=>{
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const resEl = document.getElementById('regResult');
+  resEl.style.display='none';
+
+  if(!firstName || !lastName || !mobile){
+    show(resEl, '<b style="color:#d97706">Please fill first name, last name and mobile.</b>');
+    return;
+  }
+  // basic mobile check
+  if(!/^\d{10}$/.test(mobile)){
+    show(resEl, '<b style="color:#dc2626">Enter a valid 10-digit mobile number</b>');
+    return;
+  }
+
+  const payload = {
+    first_name: firstName,
+    last_name: lastName,
+    mobile: mobile,
+    email: email,
+    account_number: genAccountNumber(),
+    customer_id: genCustomerId()
+  };
+
+  try{
+    const resp = await fetch(API_BASE + '/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if(resp.ok){
+      show(resEl, `<b style="color:green">Registered successfully.</b><br><br>
+        <strong>Full name:</strong> ${data.full_name}<br>
+        <strong>Account No:</strong> ${data.account_number}<br>
+        <strong>Customer ID:</strong> ${data.customer_id}`);
+      // clear inputs
+      document.getElementById('firstName').value = '';
+      document.getElementById('lastName').value = '';
+      document.getElementById('mobile').value = '';
+      document.getElementById('email').value = '';
+    } else {
+      show(resEl, '<b style="color:#b91c1c">' + (data.error || 'Registration failed') + '</b>');
+    }
+  }catch(e){
+    show(resEl, '<b style="color:#b91c1c">Network or server error. Make sure the Python API is running in Termux at http://127.0.0.1:5000</b>');
+  }
+});
+
+// Login
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+  const mobile = document.getElementById('loginMobile').value.trim();
+  const resEl = document.getElementById('loginResult');
+  resEl.style.display='none';
+  if(!/^\d{10}$/.test(mobile)){
+    show(resEl, '<b style="color:#dc2626">Enter a valid 10-digit mobile number</b>');
+    return;
+  }
+  try{
+    const resp = await fetch(API_BASE + '/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({mobile})
+    });
+    const data = await resp.json();
+    if(resp.ok){
+      show(resEl, `<strong>Full name:</strong> ${data.full_name}<br>
+        <strong>Account No:</strong> ${data.account_number}<br>
+        <strong>Customer ID:</strong> ${data.customer_id}`);
+      document.getElementById('loginMobile').value = '';
+    } else {
+      show(resEl, '<b style="color:#b91c1c">' + (data.error || 'Login failed') + '</b>');
+    }
+  }catch(e){
+    show(resEl, '<b style="color:#b91c1c">Network or server error. Make sure the Python API is running in Termux at http://127.0.0.1:5000</b>');
+  }
+});
+
+// Optional: clear all stored users on server (for dev/testing)
+document.getElementById('clearAll').addEventListener('click', async ()=>{
+  if(!confirm('This will remove all users on the server data.json. Continue?')) return;
+  try{
+    const resp = await fetch(API_BASE + '/reset', { method: 'POST' });
+    const data = await resp.json();
+    alert(data.message || 'Reset done');
+  }catch(e){
+    alert('Reset failed: network/server error');
+  }
+});
+</script>
+</body>
+</html>
